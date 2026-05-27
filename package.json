@@ -44,7 +44,7 @@
     "vue-i18n": "^11.2.8",
     "vue-router": "^5.0.0",
     "vue-tsc": "^3.2.4",
-    "web-ext": "^9.3.0",
+    "web-ext": "^10.2.0",
     "webext-bridge": "^6.0.1",
     "webextension-polyfill": "^0.12.0"
   },
