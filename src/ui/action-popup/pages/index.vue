@@ -5,10 +5,9 @@
     <div class="hero">
       <div class="hero-content text-center">
         <div class="max-w-md">
-          <h1>Welcome!</h1>
+          <h1>Code Link</h1>
           <p>
-            Unlock productivity and streamline your workflow with our SaaS
-            Chrome extension platform.
+            Navigate to linkedin to use the extension!
           </p>
 
           <div class="flex gap-2 justify-center mb-4">
@@ -35,16 +34,6 @@
           >
             Get Started Now
           </UButton>
-
-          <div class="flex justify-evenly my-6">
-            <RouterLink to="/action-popup/playground">Playground</RouterLink>
-
-            <a href="https://github.com/mubaidr/vite-vue3-browser-extension-v3">
-              Documentation
-            </a>
-
-            <a href="https://mubaidr.js.org">Support</a>
-          </div>
         </div>
       </div>
     </div>

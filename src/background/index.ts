@@ -1,6 +1,3 @@
-// Sample code if using extensionpay.com
-// import { extPay } from 'src/utils/payment/extPay'
-// extPay.startBackground()
 
 chrome.runtime.onInstalled.addListener(async (opt) => {
   // Check if reason is install or update. Eg: opt.reason === 'install' // If extension is installed.
@@ -26,6 +23,15 @@ chrome.runtime.onInstalled.addListener(async (opt) => {
   }
 })
 
+// Functionality for user inspecting a linkedin page
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  console.info("General URL " + tab.url)
+  const regex = /linkedin\.com\/in\/([a-z0-9-]+)\/?$/i;
+  if (changeInfo.status == "complete" && (tab.url?.match(regex))) {
+    console.info("On profile for" + tab.url)
+  }
+})
+
 self.onerror = function (message, source, lineno, colno, error) {
   console.info("Error: " + message)
   console.info("Source: " + source)
@@ -34,6 +40,6 @@ self.onerror = function (message, source, lineno, colno, error) {
   console.info("Error object: " + error)
 }
 
-console.info("hello world from background")
+console.info("hello world from background yoooooo")
 
 export {}
