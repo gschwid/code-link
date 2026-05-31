@@ -1,5 +1,3 @@
-let currentProfile = "" // Used so content injection doesnt happen multiple times when user is on the same linkedin profile and just refreshing the page. 
-
 chrome.runtime.onInstalled.addListener(async (opt) => {
   // Check if reason is install or update. Eg: opt.reason === 'install' // If extension is installed.
   // opt.reason === 'update' // If extension is updated.
@@ -21,23 +19,6 @@ chrome.runtime.onInstalled.addListener(async (opt) => {
     })
 
     return
-  }
-})
-
-// Functionality for user inspecting a linkedin page
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  const regex = /linkedin\.com\/in\/([a-z0-9-]+)\/?/i;
-  if (changeInfo.url && (tab.url?.match(regex)) && (tab.url?.match(regex))[1] != currentProfile) {
-    console.info("On profile for" + tab.url)
-    currentProfile = tab.url.match(regex)[1]
-    console.info("Current profile: " + currentProfile)
-    // Create content page that appears on website.
-    chrome.scripting.executeScript({
-      target: { tabId },
-      files: ["src/content-script/index.ts-loader.js"],
-    }).catch((err) => {
-      console.error("Error injecting content script: ", err)
-    })
   }
 })
 

@@ -29,14 +29,16 @@ export default {
     service_worker: "src/background/index.ts",
     type: "module",
   },
-  // content_scripts: [
-  //   {
-  //     all_frames: false,
-  //     js: ["src/content-script/index.ts"],
-  //     matches: ["https://www.linkedin.com/in/*/*"],
-  //     run_at: "document_end",
-  //   },
-  // ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.linkedin.com/*", "<all_urls>"
+      ],
+      "js": ["src/content-script/index.ts"],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ],
   side_panel: {
     default_path: "src/ui/side-panel/index.html",
   },
@@ -44,13 +46,15 @@ export default {
   options_page: "src/ui/options-page/index.html",
   offline_enabled: true,
   host_permissions: ["<all_urls>"],
-  permissions: ["storage", "tabs", "background", "sidePanel", "webNavigation", "scripting", "activeTab"],
+  permissions: ["storage", "tabs", "background", "sidePanel", "webNavigation", "scripting", "activeTab", "webRequest"],
   web_accessible_resources: [
     {
       resources: [
         "src/ui/setup/index.html",
         "src/ui/content-script-iframe/index.html",
         "src/ui/devtools-panel/index.html",
+        "src/assets/logo.png",
+        'src/ui/devtools-panel/index.html'
       ],
       matches: ["<all_urls>"],
       use_dynamic_url: false,
