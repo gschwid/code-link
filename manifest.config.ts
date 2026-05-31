@@ -33,7 +33,7 @@ export default {
   //   {
   //     all_frames: false,
   //     js: ["src/content-script/index.ts"],
-  //     matches: ["*://*/*"],
+  //     matches: ["https://www.linkedin.com/in/*/*"],
   //     run_at: "document_end",
   //   },
   // ],
@@ -44,7 +44,7 @@ export default {
   options_page: "src/ui/options-page/index.html",
   offline_enabled: true,
   host_permissions: ["<all_urls>"],
-  permissions: ["storage", "tabs", "background", "sidePanel", "webNavigation"],
+  permissions: ["storage", "tabs", "background", "sidePanel", "webNavigation", "scripting", "activeTab"],
   web_accessible_resources: [
     {
       resources: [

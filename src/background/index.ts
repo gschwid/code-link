@@ -27,11 +27,17 @@ chrome.runtime.onInstalled.addListener(async (opt) => {
 // Functionality for user inspecting a linkedin page
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   const regex = /linkedin\.com\/in\/([a-z0-9-]+)\/?/i;
-  if (tab.url && (tab.url?.match(regex)) && (tab.url?.match(regex))[1] != currentProfile) {
+  if (changeInfo.url && (tab.url?.match(regex)) && (tab.url?.match(regex))[1] != currentProfile) {
     console.info("On profile for" + tab.url)
     currentProfile = tab.url.match(regex)[1]
     console.info("Current profile: " + currentProfile)
     // Create content page that appears on website.
+    chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["src/content-script/index.ts-loader.js"],
+    }).catch((err) => {
+      console.error("Error injecting content script: ", err)
+    })
   }
 })
 
