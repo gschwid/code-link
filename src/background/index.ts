@@ -17,7 +17,6 @@ chrome.runtime.onInstalled.addListener(async (opt) => {
       active: true,
       url: chrome.runtime.getURL("src/ui/setup/index.html?type=update"),
     })
-
     return
   }
 })
