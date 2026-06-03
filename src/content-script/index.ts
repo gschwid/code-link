@@ -2,6 +2,14 @@
 import "./index.css"
 import { name } from "~/package.json"
 
+// Handle parsing logic sent from vue frontend
+browser.runtime.onMessage.addListener((message) => {
+  if (message.action === "parseLinkedinProfile") {
+    console.info("Received message to parse LinkedIn profile ");
+    return Promise.resolve({ success: true });
+  }
+})
+
 // Checks if current URL matches the LinkedIn profile pattern.
 function checkMatch() {
   const regex = /linkedin\.com\/in\/([a-z0-9-]+)\/?/i;

@@ -32,7 +32,7 @@ export default {
   "content_scripts": [
     {
       "matches": [
-        "https://*.linkedin.com/*", "<all_urls>"
+        "https://*.linkedin.com/*"
       ],
       "js": ["src/content-script/index.ts"],
       "run_at": "document_end",
