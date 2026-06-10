@@ -29,15 +29,13 @@ export default {
     service_worker: "src/background/index.ts",
     type: "module",
   },
-  "content_scripts": [
+  content_scripts: [
     {
-      "matches": [
-        "https://*.linkedin.com/*"
-      ],
-      "js": ["src/content-script/index.ts"],
-      "run_at": "document_end",
-      "all_frames": false
-    }
+      matches: ["https://*.linkedin.com/*"],
+      js: ["src/content-script/index.ts"],
+      run_at: "document_end",
+      all_frames: false,
+    },
   ],
   side_panel: {
     default_path: "src/ui/side-panel/index.html",
@@ -46,7 +44,16 @@ export default {
   options_page: "src/ui/options-page/index.html",
   offline_enabled: true,
   host_permissions: ["<all_urls>"],
-  permissions: ["storage", "tabs", "background", "sidePanel", "webNavigation", "scripting", "activeTab", "webRequest"],
+  permissions: [
+    "storage",
+    "tabs",
+    "background",
+    "sidePanel",
+    "webNavigation",
+    "scripting",
+    "activeTab",
+    "webRequest",
+  ],
   web_accessible_resources: [
     {
       resources: [
@@ -54,7 +61,7 @@ export default {
         "src/ui/content-script-iframe/index.html",
         "src/ui/devtools-panel/index.html",
         "src/assets/logo.png",
-        'src/ui/devtools-panel/index.html'
+        "src/ui/devtools-panel/index.html",
       ],
       matches: ["<all_urls>"],
       use_dynamic_url: false,

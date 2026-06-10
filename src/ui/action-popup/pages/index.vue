@@ -6,9 +6,7 @@
       <div class="hero-content text-center">
         <div class="max-w-md">
           <h1>Code Link</h1>
-          <p>
-            Navigate to linkedin to use the extension!
-          </p>
+          <p>Navigate to linkedin to use the extension!</p>
 
           <div class="flex gap-2 justify-center mb-4">
             <UButton
