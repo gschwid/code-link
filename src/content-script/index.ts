@@ -11,10 +11,11 @@ browser.runtime.onMessage.addListener(async (message) => {
     if (workspace) {
       workspace.scrollTop = 0
       await new Promise((resolve) => {
-        const waitInterval = 50
-        const scrollAmount = 500
+        const waitInterval = 100
+        const scrollAmount = 200
 
-        const timer = setInterval(() => { // Weird loop needed for scrolling using JS lol
+        const timer = setInterval(() => {
+          // Weird loop needed for scrolling using JS lol
           if (
             workspace.scrollTop + workspace.clientHeight >=
             workspace.scrollHeight
@@ -26,6 +27,19 @@ browser.runtime.onMessage.addListener(async (message) => {
           }
         }, waitInterval)
       })
+
+      // Get proper HTML elements after scrolling
+      let returnedJson = {}
+      const nameQuery = `a[href="${window.location.href}"][aria-haspopup="dialog"] h2`
+      // TODO: MAKE THIS CODE GOOD ONCE IT WORKS
+      // Get name of profile
+      const name = document.querySelector(nameQuery)?.textContent
+      returnedJson = { name: name || "Unknown" }
+
+      console.info(
+        "Finished parsing LinkedIn profile, returning data:",
+        returnedJson,
+      )
       return Promise.resolve({ success: true })
     }
   }
