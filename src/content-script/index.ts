@@ -29,12 +29,17 @@ browser.runtime.onMessage.addListener(async (message) => {
       })
 
       // Get proper HTML elements after scrolling
-      let returnedJson = {}
+      const returnedJson = {}
       const nameQuery = `a[href="${window.location.href}"][aria-haspopup="dialog"] h2`
       // TODO: MAKE THIS CODE GOOD ONCE IT WORKS
       // Get name of profile
-      const name = document.querySelector(nameQuery)?.textContent
-      returnedJson = { name: name || "Unknown" }
+      const name = document.querySelector(nameQuery)
+      const location = findElementByText("p", ".") // Finds the location element
+      const headline = location?.previousElementSibling
+
+      returnedJson.name = name?.textContent || "Unknown"
+      returnedJson.location = location?.textContent || "Unknown"
+      returnedJson.headline = headline?.textContent || "Unknown"
 
       console.info(
         "Finished parsing LinkedIn profile, returning data:",
@@ -45,6 +50,16 @@ browser.runtime.onMessage.addListener(async (message) => {
   }
   return Promise.resolve({ success: false })
 })
+
+// Helper function to find an element by its text content
+function findElementByText(tag: string, text: string): Element | null {
+  const elements = document.querySelectorAll(tag)
+  return (
+    Array.from(elements).find((el) =>
+      el.textContent?.toLowerCase().includes(text.toLowerCase()),
+    ) || null
+  )
+}
 
 // Checks if current URL matches the LinkedIn profile pattern.
 function checkMatch() {
