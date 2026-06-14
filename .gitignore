@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 docs/
+.eslintcache
+.prettierignore
+.prettierrc
