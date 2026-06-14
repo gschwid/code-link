@@ -31,14 +31,47 @@ browser.runtime.onMessage.addListener(async (message) => {
       // Get proper HTML elements after scrolling
       let returnedJson = {}
       const nameQuery = `a[href="${window.location.href}"][aria-haspopup="dialog"] h2`
+      const bioQuery = `p`
       // TODO: MAKE THIS CODE GOOD ONCE IT WORKS
-      // Get name of profile
+      // Get bio elements of profile
+      const dotReference = findElementByExactText("p", "·") // Finds known dot element that is used as a separator in the profile
+      const bioParent = dotReference?.parentElement?.parentElement
+      const location = dotReference?.previousElementSibling
       const name = document.querySelector(nameQuery)
-      const position = findElementByText("p", "·") // Finds the location element
-      const headline = position?.parentElement
+      const bio = bioParent?.querySelectorAll(bioQuery) // Get all bio related elements
+
+      // Filter unimportant bio elements and only keep those that are relevant
+      const blockedTexts = [
+        "·",
+        "Contact info",
+        "Follow",
+        "Message",
+        "· 3rd",
+        "· 2nd",
+        "· 1st",
+        "He/Him",
+        "She/Her",
+        "They/Them",
+      ] // These are all common elements in the bio section that we want to ignore
+      const relevantBio = Array.from(bio || []).filter((p) => {
+        const text = p.textContent?.trim() || ""
+        return (
+          text.length > 0 && // Not empty
+          !blockedTexts.some((blocked) => text === blocked)
+        )
+      })
+
+      // Get About section of profile
+      const aboutSection = findElementByExactText("h2", "About")
+      const aboutParent = aboutSection?.parentElement?.parentElement
+      const about = aboutParent?.querySelector("span")
 
       returnedJson.name = name?.textContent || "Unknown"
-      returnedJson.postion = position?.textContent || "Unknown"
+      returnedJson.location = location?.textContent || "Unknown"
+      returnedJson.bio = relevantBio[0]?.textContent || "Unknown"
+      returnedJson.job = relevantBio[1]?.textContent || "Unknown"
+      returnedJson.location = relevantBio[2]?.textContent || "Unknown"
+      returnedJson.about = about?.textContent || "Unknown"
 
       console.info(
         "Finished parsing LinkedIn profile, returning data:",
@@ -53,7 +86,17 @@ browser.runtime.onMessage.addListener(async (message) => {
 // Helper function to find an element by its text content
 function findElementByText(tag: string, text: string): Element | null {
   const elements = document.querySelectorAll(tag)
-  return Array.from(elements).find((el) => el.textContent?.includes(text)) || null
+  return (
+    Array.from(elements).find((el) => el.textContent?.includes(text)) || null
+  )
+}
+
+// Helper function to find an element by its EXACT text content
+function findElementByExactText(tag: string, text: string): Element | null {
+  const elements = document.querySelectorAll(tag)
+  return (
+    Array.from(elements).find((el) => el.textContent?.trim() === text) || null
+  )
 }
 
 // Checks if current URL matches the LinkedIn profile pattern.
