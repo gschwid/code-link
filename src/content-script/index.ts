@@ -32,6 +32,7 @@ browser.runtime.onMessage.addListener(async (message) => {
       let returnedJson = {}
       const nameQuery = `a[href="${window.location.href}"][aria-haspopup="dialog"] h2`
       const bioQuery = `p`
+      const aboutQuery = `span[tabindex="-1"]`
       // TODO: MAKE THIS CODE GOOD ONCE IT WORKS
       // Get bio elements of profile
       const dotReference = findElementByExactText("p", "·") // Finds known dot element that is used as a separator in the profile
@@ -64,7 +65,13 @@ browser.runtime.onMessage.addListener(async (message) => {
       // Get About section of profile
       const aboutSection = findElementByExactText("h2", "About")
       const aboutParent = aboutSection?.parentElement?.parentElement
-      const about = aboutParent?.querySelector("span")
+      console.info("About parent element:", aboutParent)
+      const about = aboutParent?.querySelector(aboutQuery)
+      console.info("About element:", about)
+
+      //Get top skills from profile
+      const skillsSection = findElementByExactText("p", "Top skills")
+      const skills = skillsSection?.nextSibling
 
       returnedJson.name = name?.textContent || "Unknown"
       returnedJson.location = location?.textContent || "Unknown"
@@ -72,6 +79,7 @@ browser.runtime.onMessage.addListener(async (message) => {
       returnedJson.job = relevantBio[1]?.textContent || "Unknown"
       returnedJson.location = relevantBio[2]?.textContent || "Unknown"
       returnedJson.about = about?.textContent || "Unknown"
+      returnedJson.skills = skills?.textContent || "Unknown"
 
       console.info(
         "Finished parsing LinkedIn profile, returning data:",
