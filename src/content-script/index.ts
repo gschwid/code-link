@@ -8,31 +8,32 @@ browser.runtime.onMessage.addListener(async (message) => {
     console.info("Received message to parse LinkedIn profile 2")
     console.info("Current Window URL Location:", window.location.href)
     const workspace = document.getElementById("workspace") // Actually get scrollbar element
-    if (workspace) {
-      workspace.scrollTop = 0
-      await new Promise((resolve) => {
-        const waitInterval = 100
-        const scrollAmount = 200
+    if (workspace) { // Comment out scrolling for now to avoid detection
+      // workspace.scrollTop = 0
+      // await new Promise((resolve) => {
+      //   const waitInterval = 100
+      //   const scrollAmount = 200
 
-        const timer = setInterval(() => {
-          // Weird loop needed for scrolling using JS lol
-          if (
-            workspace.scrollTop + workspace.clientHeight >=
-            workspace.scrollHeight
-          ) {
-            clearInterval(timer)
-            resolve(true)
-          } else {
-            workspace.scrollTop += scrollAmount
-          }
-        }, waitInterval)
-      })
+      //   const timer = setInterval(() => {
+      //     // Weird loop needed for scrolling using JS lol
+      //     if (
+      //       workspace.scrollTop + workspace.clientHeight >=
+      //       workspace.scrollHeight
+      //     ) {
+      //       clearInterval(timer)
+      //       resolve(true)
+      //     } else {
+      //       workspace.scrollTop += scrollAmount
+      //     }
+      //   }, waitInterval)
+      // })
 
       // Get proper HTML elements after scrolling
       let returnedJson = {}
       const nameQuery = `a[href="${window.location.href}"][aria-haspopup="dialog"] h2`
       const bioQuery = `p`
       const aboutQuery = `span[tabindex="-1"]`
+      const featuredAndActivityQuery = `ul[data-testid="carousel-children-container"]`
       // TODO: MAKE THIS CODE GOOD ONCE IT WORKS
       // Get bio elements of profile
       const dotReference = findElementByExactText("p", "·") // Finds known dot element that is used as a separator in the profile
@@ -69,9 +70,40 @@ browser.runtime.onMessage.addListener(async (message) => {
       const about = aboutParent?.querySelector(aboutQuery)
       console.info("About element:", about)
 
-      //Get top skills from profile
+      // Get top skills from profile
       const skillsSection = findElementByExactText("p", "Top skills")
       const skills = skillsSection?.nextSibling
+
+      // Get featured section of profile
+      const featuredSections = findElementsByExactText("p", "Link")
+      console.info("Featured section elements:", featuredSections)
+      if (featuredSections.length > 0) { 
+        returnedJson.featured = []
+        featuredSections.forEach((section) => {
+          let featured = {}
+          console.info("Featured section element:", section)
+
+      })
+       }
+
+      // Get activity and featured based on same test data id. Look for known elements in each section to determine which is which
+      const activityAndFeatured = document.querySelectorAll(featuredAndActivityQuery)
+      const activityElement = Array.from(activityAndFeatured).find((el) => { 
+        console.info("Activity section element:", el)
+        if (el.querySelector("a[href*='/feed/']")) {
+          return true
+        }
+      })
+      const featuredElement = Array.from(activityAndFeatured).find((el) => {
+        console.info("Featured section element:", el)
+        if (findElementByExactText("p", "Link", el) || findElementByExactText("p", "Media", el)) { // Search for specific link word that is only in featured section
+          console.info("Found featured section element:", el)
+          return true
+        }
+      })
+
+      console.info("Activity element:", activityElement)
+      console.info("Featured element:", featuredElement)
 
       returnedJson.name = name?.textContent || "Unknown"
       returnedJson.location = location?.textContent || "Unknown"
@@ -92,20 +124,29 @@ browser.runtime.onMessage.addListener(async (message) => {
 })
 
 // Helper function to find an element by its text content
-function findElementByText(tag: string, text: string): Element | null {
-  const elements = document.querySelectorAll(tag)
+function findElementByText(tag: string, text: string, el: Element | Document = document): Element | null {
+  const elements = el.querySelectorAll(tag)
   return (
     Array.from(elements).find((el) => el.textContent?.includes(text)) || null
   )
 }
 
 // Helper function to find an element by its EXACT text content
-function findElementByExactText(tag: string, text: string): Element | null {
-  const elements = document.querySelectorAll(tag)
+function findElementByExactText(tag: string, text: string, el: Element | Document = document): Element | null {
+  const elements = el.querySelectorAll(tag)
   return (
     Array.from(elements).find((el) => el.textContent?.trim() === text) || null
   )
 }
+
+// Helper function to find list of elements by its EXACT text content
+function findElementsByExactText(tag: string, text: string, el: Element | Document = document): Element[] {
+  const elements = el.querySelectorAll(tag)
+  return (
+    Array.from(elements).filter((el) => el.textContent?.trim() === text)
+  )
+}
+
 
 // Checks if current URL matches the LinkedIn profile pattern.
 function checkMatch() {
