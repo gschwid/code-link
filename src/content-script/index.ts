@@ -86,24 +86,35 @@ browser.runtime.onMessage.addListener(async (message) => {
       })
        }
 
-      // Get activity and featured based on same test data id. Look for known elements in each section to determine which is which
-      const activityAndFeatured = document.querySelectorAll(featuredAndActivityQuery)
-      const activityElement = Array.from(activityAndFeatured).find((el) => { 
-        console.info("Activity section element:", el)
-        if (el.querySelector("a[href*='/feed/']")) {
-          return true
-        }
-      })
-      const featuredElement = Array.from(activityAndFeatured).find((el) => {
-        console.info("Featured section element:", el)
-        if (findElementByExactText("p", "Link", el) || findElementByExactText("p", "Media", el)) { // Search for specific link word that is only in featured section
-          console.info("Found featured section element:", el)
-          return true
-        }
-      })
+      // Get Experience section of profile
+      const experienceSection = findElementByExactText("h2", "Experience")
+      const experienceParent = experienceSection?.parentElement?.parentElement
+      const experienceFigure = experienceParent?.querySelectorAll("figure") // Each job experience is stored in a figure element
 
-      console.info("Activity element:", activityElement)
-      console.info("Featured element:", featuredElement)
+       returnedJson.jobs = []
+
+      experienceFigure?.forEach((figure) => {
+        let job = {}
+        const jobSection = figure.closest("div")
+        const jobInfo = jobSection?.querySelectorAll("p")
+        console.info(jobInfo)
+        job.name =jobInfo[0]?.innerText
+        job.type = jobInfo[1]?.innerText
+        job.dates = jobInfo[2]?.innerText
+        job.location = jobInfo[3]?.innerText
+        job.desc = jobInfo[4]?.innerText
+        job.skills = jobInfo[5]?.innerText
+        returnedJson.jobs.push(job)
+      })
+      // // Group experience based on the same job
+      // let currentJob = null
+      // experience?.forEach((exp) => { 
+      //   while (!exp.parentElement?.querySelector("a[href='/school/'][href='/job/']")) { 
+      //     exp = exp.parentElement
+      //   }// Loop until we find the job title element, which is an h3 tag
+      // })
+
+      console.info("Experience section element:",experienceFigure)
 
       returnedJson.name = name?.textContent || "Unknown"
       returnedJson.location = location?.textContent || "Unknown"
