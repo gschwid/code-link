@@ -8,7 +8,8 @@ browser.runtime.onMessage.addListener(async (message) => {
     console.info("Received message to parse LinkedIn profile 2")
     console.info("Current Window URL Location:", window.location.href)
     const workspace = document.getElementById("workspace") // Actually get scrollbar element
-    if (workspace) { // Comment out scrolling for now to avoid detection
+    if (workspace) {
+      // Comment out scrolling for now to avoid detection
       // workspace.scrollTop = 0
       // await new Promise((resolve) => {
       //   const waitInterval = 100
@@ -77,49 +78,50 @@ browser.runtime.onMessage.addListener(async (message) => {
       // Get featured section of profile
       const featuredSections = findElementsByExactText("p", "Link")
       console.info("Featured section elements:", featuredSections)
-      if (featuredSections.length > 0) { 
+      if (featuredSections.length > 0) {
         returnedJson.featured = []
         featuredSections.forEach((section) => {
           let featured = {}
           console.info("Featured section element:", section)
-
-      })
-       }
+        })
+      }
 
       // Get Experience section of profile
       const experienceSection = findElementByExactText("h2", "Experience")
       const experienceParent = experienceSection?.parentElement?.parentElement
       const experienceFigure = experienceParent?.querySelectorAll("figure") // Each job experience is stored in a figure element
 
-       returnedJson.jobs = []
+      returnedJson.jobs = []
 
+      // Go through jobs section
       experienceFigure?.forEach((figure) => {
         let job = {}
-        const jobSection = figure.closest("div")
+        const jobSection = figure.closest("div")?.parentElement?.closest("div")?.parentElement?.closest("div")?.parentElement?.closest("div") // Dont ask...
         const jobInfo = jobSection?.querySelectorAll("p")
-        console.info(jobInfo)
-        job.name =jobInfo[0]?.innerText
-        job.type = jobInfo[1]?.innerText
-        job.dates = jobInfo[2]?.innerText
-        job.location = jobInfo[3]?.innerText
-        job.desc = jobInfo[4]?.innerText
-        job.skills = jobInfo[5]?.innerText
-        returnedJson.jobs.push(job)
-      })
-      // // Group experience based on the same job
-      // let currentJob = null
-      // experience?.forEach((exp) => { 
-      //   while (!exp.parentElement?.querySelector("a[href='/school/'][href='/job/']")) { 
-      //     exp = exp.parentElement
-      //   }// Loop until we find the job title element, which is an h3 tag
-      // })
+        const jobBio = jobSection?.querySelector("span") // Bio data stored in first span
+        const test = jobSection?.querySelectorAll("hr")
+        console.info("job section: ", jobSection)
+        console.info("yo this a test: ", test)
+        if (jobInfo?.length != 0) {
+          console.info(jobInfo)
+          job.name = jobInfo[0]?.innerText // Name is always first
+          job.data = []
+          jobInfo?.forEach((data) => {
+            // Loop through each found element, add it to the data in the job.
+            job.data.push(data.innerText)
+          })
+          job.bio = jobBio?.innerText
+          returnedJson.jobs.push(job)
 
-      console.info("Experience section element:",experienceFigure)
+          console.info(jobBio)
+        }
+      })
+
+      console.info("Experience section element:", experienceFigure)
 
       returnedJson.name = name?.textContent || "Unknown"
       returnedJson.location = location?.textContent || "Unknown"
       returnedJson.bio = relevantBio[0]?.textContent || "Unknown"
-      returnedJson.job = relevantBio[1]?.textContent || "Unknown"
       returnedJson.location = relevantBio[2]?.textContent || "Unknown"
       returnedJson.about = about?.textContent || "Unknown"
       returnedJson.skills = skills?.textContent || "Unknown"
@@ -135,7 +137,11 @@ browser.runtime.onMessage.addListener(async (message) => {
 })
 
 // Helper function to find an element by its text content
-function findElementByText(tag: string, text: string, el: Element | Document = document): Element | null {
+function findElementByText(
+  tag: string,
+  text: string,
+  el: Element | Document = document,
+): Element | null {
   const elements = el.querySelectorAll(tag)
   return (
     Array.from(elements).find((el) => el.textContent?.includes(text)) || null
@@ -143,7 +149,11 @@ function findElementByText(tag: string, text: string, el: Element | Document = d
 }
 
 // Helper function to find an element by its EXACT text content
-function findElementByExactText(tag: string, text: string, el: Element | Document = document): Element | null {
+function findElementByExactText(
+  tag: string,
+  text: string,
+  el: Element | Document = document,
+): Element | null {
   const elements = el.querySelectorAll(tag)
   return (
     Array.from(elements).find((el) => el.textContent?.trim() === text) || null
@@ -151,13 +161,14 @@ function findElementByExactText(tag: string, text: string, el: Element | Documen
 }
 
 // Helper function to find list of elements by its EXACT text content
-function findElementsByExactText(tag: string, text: string, el: Element | Document = document): Element[] {
+function findElementsByExactText(
+  tag: string,
+  text: string,
+  el: Element | Document = document,
+): Element[] {
   const elements = el.querySelectorAll(tag)
-  return (
-    Array.from(elements).filter((el) => el.textContent?.trim() === text)
-  )
+  return Array.from(elements).filter((el) => el.textContent?.trim() === text)
 }
-
 
 // Checks if current URL matches the LinkedIn profile pattern.
 function checkMatch() {
