@@ -95,29 +95,47 @@ browser.runtime.onMessage.addListener(async (message) => {
 
       // Go through jobs section
       experienceFigure?.forEach((figure) => {
-        let job = {}
-        const jobSection = figure.closest("div")?.parentElement?.closest("div")?.parentElement?.closest("div")?.parentElement?.closest("div") // Dont ask...
-        const jobInfo = jobSection?.querySelectorAll("p")
-        const jobBio = jobSection?.querySelector("span") // Bio data stored in first span
-        const test = jobSection?.querySelectorAll("hr")
-        console.info("job section: ", jobSection)
-        console.info("yo this a test: ", test)
-        if (jobInfo?.length != 0) {
-          console.info(jobInfo)
-          job.name = jobInfo[0]?.innerText // Name is always first
-          job.data = []
-          jobInfo?.forEach((data) => {
-            // Loop through each found element, add it to the data in the job.
-            job.data.push(data.innerText)
+        const jobSection = figure.closest("div")
+        const multiplePositionsSection =
+          jobSection?.parentElement?.parentElement?.parentElement
+        if (multiplePositionsSection?.querySelector("ul")) {
+          // Case where person has worked multiple jobs at one company.
+          console.info("found job with multiple postions!")
+          const sections = multiplePositionsSection.querySelectorAll("li")
+          console.info("sections bitch; ", sections)
+          sections.forEach((section) => {
+            let job = {}
+            console.info("specific section", section)
+            const jobInfo = section?.querySelectorAll("p")
+            const jobBio = section?.querySelector("span") // Bio data stored in first span
+            if (jobInfo?.length != 0) {
+              job.name = jobInfo[0]?.innerText // Name is always first
+              job.data = []
+              jobInfo?.forEach((data) => {
+                // Loop through each found element, add it to the data in the job.
+                job.data.push(data.innerText)
+              })
+              job.bio = jobBio?.innerText
+              returnedJson.jobs.push(job)
+            }
           })
-          job.bio = jobBio?.innerText
-          returnedJson.jobs.push(job)
-
-          console.info(jobBio)
+        } else {
+          // Case where the company just has one job and thats it
+          let job = {}
+          const jobInfo = jobSection?.querySelectorAll("p")
+          const jobBio = jobSection?.querySelector("span") // Bio data stored in first span
+          if (jobInfo?.length != 0) {
+            job.name = jobInfo[0]?.innerText // Name is always first
+            job.data = []
+            jobInfo?.forEach((data) => {
+              // Loop through each found element, add it to the data in the job.
+              job.data.push(data.innerText)
+            })
+            job.bio = jobBio?.innerText
+            returnedJson.jobs.push(job)
+          }
         }
       })
-
-      console.info("Experience section element:", experienceFigure)
 
       returnedJson.name = name?.textContent || "Unknown"
       returnedJson.location = location?.textContent || "Unknown"
