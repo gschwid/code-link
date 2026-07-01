@@ -35,6 +35,7 @@ browser.runtime.onMessage.addListener(async (message) => {
       const bioQuery = `p`
       const aboutQuery = `span[tabindex="-1"]`
       const featuredAndActivityQuery = `ul[data-testid="carousel-children-container"]`
+
       // TODO: MAKE THIS CODE GOOD ONCE IT WORKS
       // Get bio elements of profile
       const dotReference = findElementByExactText("p", "·") // Finds known dot element that is used as a separator in the profile
@@ -76,15 +77,18 @@ browser.runtime.onMessage.addListener(async (message) => {
       const skills = skillsSection?.nextSibling
 
       // Get featured section of profile
-      const featuredSections = findElementsByExactText("p", "Link")
-      console.info("Featured section elements:", featuredSections)
-      if (featuredSections.length > 0) {
-        returnedJson.featured = []
-        featuredSections.forEach((section) => {
-          let featured = {}
-          console.info("Featured section element:", section)
-        })
-      }
+      const featuredSection = findElementByExactText("h2", "Featured")
+      const featuredParent = featuredSection?.parentElement?.parentElement
+
+      // get each featured item
+      const featuredItems = featuredParent?.querySelectorAll("li")
+      console.info("Featured items:", featuredItems)
+      featuredItems?.forEach((item) => {
+        const itemLink = item.querySelector("a")
+        const featuredData = item.querySelectorAll("p")
+
+        // TODO: FIGURE OUT HOW TO PROPERLY PARSE THIS DATA
+      })
 
       // Get Experience section of profile
       const experienceSection = findElementByExactText("h2", "Experience")
@@ -139,6 +143,33 @@ browser.runtime.onMessage.addListener(async (message) => {
         }
       })
 
+      // Get Education section of profile
+      const educationSection = findElementByExactText("h2", "Education")
+      const educationParent = educationSection?.parentElement?.parentElement
+      const educationFigure = educationParent?.querySelectorAll("figure") // Each education is stored in a figure element
+
+      returnedJson.education = []
+
+      // Go through education section
+      educationFigure?.forEach((figure) => {
+        let education = {}
+        const educationFigureParent = figure.closest("div")
+        const educationInfo = educationFigureParent?.querySelectorAll("p")
+        const educationBio = educationFigureParent?.querySelector("span") // Bio data stored in first span
+        if (educationInfo?.length != 0) {
+          education.name = educationInfo[0]?.innerText // Name is always first
+          education.data = []
+          educationInfo?.forEach((data) => {
+            // Loop through each found element, add it to the data in the job.
+            if (data.innerText !== education.name)
+              education.data.push(data.innerText)
+          })
+          education.bio = educationBio?.innerText
+          returnedJson.education.push(education)
+        }
+      })
+
+      // Append everything to the returnedJSon
       returnedJson.name = name?.textContent || "Unknown"
       returnedJson.location = location?.textContent || "Unknown"
       returnedJson.bio = relevantBio[0]?.textContent || "Unknown"
