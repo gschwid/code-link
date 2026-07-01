@@ -101,8 +101,9 @@ browser.runtime.onMessage.addListener(async (message) => {
         if (multiplePositionsSection?.querySelector("ul")) {
           // Case where person has worked multiple jobs at one company.
           console.info("found job with multiple postions!")
+          const companyInfo = jobSection?.querySelectorAll("p") // grab company data
+          const companyArray = Array.from(companyInfo || [], (p) => p.innerText)
           const sections = multiplePositionsSection.querySelectorAll("li")
-          console.info("sections bitch; ", sections)
           sections.forEach((section) => {
             let job = {}
             console.info("specific section", section)
@@ -113,8 +114,9 @@ browser.runtime.onMessage.addListener(async (message) => {
               job.data = []
               jobInfo?.forEach((data) => {
                 // Loop through each found element, add it to the data in the job.
-                job.data.push(data.innerText)
+                if (data.innerText !== job.name) job.data.push(data.innerText)
               })
+              job.data.push(...companyArray) // Add company data to job data
               job.bio = jobBio?.innerText
               returnedJson.jobs.push(job)
             }
@@ -129,7 +131,7 @@ browser.runtime.onMessage.addListener(async (message) => {
             job.data = []
             jobInfo?.forEach((data) => {
               // Loop through each found element, add it to the data in the job.
-              job.data.push(data.innerText)
+              if (data.innerText !== job.name) job.data.push(data.innerText)
             })
             job.bio = jobBio?.innerText
             returnedJson.jobs.push(job)
