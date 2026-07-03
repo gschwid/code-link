@@ -83,11 +83,30 @@ browser.runtime.onMessage.addListener(async (message) => {
       // get each featured item
       const featuredItems = featuredParent?.querySelectorAll("li")
       console.info("Featured items:", featuredItems)
+      returnedJson.featured = []
       featuredItems?.forEach((item) => {
+        let featured = {}
         const itemLink = item.querySelector("a")
         const featuredData = item.querySelectorAll("p")
 
         // TODO: FIGURE OUT HOW TO PROPERLY PARSE THIS DATA
+        const link = itemLink?.href
+        if (link) {
+          // If a link is present, decode it properly
+          const decodedLink = decodeURIComponent(link)
+          const url = decodedLink?.split("?url=")[1]?.split("&urlhash")[0] // Get the actual URL from the LinkedIn redirect link
+          console.info("Decoded link:", url)
+          featured.link = url || link
+        }
+        console.info("Featured item link:", itemLink?.href)
+        featured.data = [] // throw everything else into data array for now, will parse later
+        featuredData?.forEach((data) => {
+          const text = data.textContent?.trim() || ""
+          if (text.length > 0) {
+            featured.data.push(text)
+          }
+        })
+        returnedJson.featured.push(featured)
       })
 
       // Get Experience section of profile
