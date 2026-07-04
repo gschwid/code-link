@@ -199,11 +199,11 @@ browser.runtime.onMessage.addListener(async (message) => {
         ProjectsParent?.querySelectorAll("hr, p, a, span")
       console.info("Projects elements:", projectsElements)
       let project = {}
-      let bioFound = false
       project.data = []
       projectsElements?.forEach((element) => {
         if (element.tagName === "A") {
           const url = element.getAttribute("href")
+          console.info("Project link found:", url)
           if (!url?.includes("linkedin.com")) {
             // Dont want linkedin urls, only want external urls
             project.link = url
@@ -217,17 +217,37 @@ browser.runtime.onMessage.addListener(async (message) => {
           returnedJson.projects.push(project)
           project = {}
           project.data = []
-          bioFound = false
-        } else if (element.tagName === "SPAN") {
-          const text = element.textContent?.trim() || ""
-          if (text.length > 0 && !bioFound) {
-            project.bio = text
-            bioFound = true
-          }
         }
       })
 
-      // Get them based on the a elemnent they will have
+      // Get Activity section of profile
+      const activitySection = findElementByExactText("h2", "Activity")
+      const activityParent =
+        activitySection?.parentElement?.parentElement?.parentElement
+      console.info("Activity parent element:", activityParent)
+
+      // Go through each post
+      returnedJson.activity = []
+      const activityPosts = activityParent?.querySelectorAll("li")
+      console.info("Activity posts:", activityPosts)
+      activityPosts?.forEach((post) => {
+        const spans = Array.from(post.querySelectorAll("a p span"))
+        console.info("Post text content:", spans)
+        const cleanSpans = spans.filter((span) => {
+          const text = span.textContent.trim()
+          // Ignore short UI words or counts
+          return !["Like", "Comment", "Share", "Reply", "•"].includes(text)
+        })
+        let postText = "" // Assume the post text is the longest of the returned content lol
+        cleanSpans.forEach((span) => {
+          if (span.textContent.length > postText.length) {
+            postText = span.textContent.trim()
+          }
+        })
+        if (postText.length > 0) {
+          returnedJson.activity.push(postText)
+        }
+      })
 
       // Append everything to the returnedJSon
       returnedJson.name = name?.textContent || "Unknown"
