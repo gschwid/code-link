@@ -31,10 +31,9 @@ browser.runtime.onMessage.addListener(async (message) => {
 
       // Get proper HTML elements after scrolling
       let returnedJson = {}
-      const nameQuery = `a[href="${window.location.href}"][aria-haspopup="dialog"] h2`
+      const nameQuery = `a[href*="linkedin"] h2`
       const bioQuery = `p`
       const aboutQuery = `span[tabindex="-1"]`
-      const featuredAndActivityQuery = `ul[data-testid="carousel-children-container"]`
 
       // TODO: MAKE THIS CODE GOOD ONCE IT WORKS
       // Get bio elements of profile
@@ -42,6 +41,7 @@ browser.runtime.onMessage.addListener(async (message) => {
       const bioParent = dotReference?.parentElement?.parentElement
       const location = dotReference?.previousElementSibling
       const name = document.querySelector(nameQuery)
+      console.info("Name element:", name)
       const bio = bioParent?.querySelectorAll(bioQuery) // Get all bio related elements
 
       // Filter unimportant bio elements and only keep those that are relevant
@@ -89,7 +89,6 @@ browser.runtime.onMessage.addListener(async (message) => {
         const itemLink = item.querySelector("a")
         const featuredData = item.querySelectorAll("p")
 
-        // TODO: FIGURE OUT HOW TO PROPERLY PARSE THIS DATA
         const link = itemLink?.href
         if (link) {
           // If a link is present, decode it properly
@@ -106,7 +105,10 @@ browser.runtime.onMessage.addListener(async (message) => {
             featured.data.push(text)
           }
         })
-        returnedJson.featured.push(featured)
+        if (featured.data.length > 0) {
+          // Only push if data got added.
+          returnedJson.featured.push(featured)
+        }
       })
 
       // Get Experience section of profile
