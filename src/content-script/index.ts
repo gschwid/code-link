@@ -188,6 +188,47 @@ browser.runtime.onMessage.addListener(async (message) => {
         }
       })
 
+      // Go through projects section
+      const ProjectsSection = findElementByText("h2", "Projects")
+      const ProjectsParent = ProjectsSection?.parentElement?.parentElement
+      console.info("Projects parent element:", ProjectsParent)
+
+      // this query system is such a mess. No defined structure for outer data, so I need to query multiple elements and seperate them based on their tag.
+      returnedJson.projects = []
+      const projectsElements =
+        ProjectsParent?.querySelectorAll("hr, p, a, span")
+      console.info("Projects elements:", projectsElements)
+      let project = {}
+      let bioFound = false
+      project.data = []
+      projectsElements?.forEach((element) => {
+        if (element.tagName === "A") {
+          const url = element.getAttribute("href")
+          if (!url?.includes("linkedin.com")) {
+            // Dont want linkedin urls, only want external urls
+            project.link = url
+          }
+        } else if (element.tagName === "P") {
+          const text = element.textContent?.trim() || ""
+          if (text.length > 0) {
+            project.data.push(text)
+          }
+        } else if (element.tagName === "HR") {
+          returnedJson.projects.push(project)
+          project = {}
+          project.data = []
+          bioFound = false
+        } else if (element.tagName === "SPAN") {
+          const text = element.textContent?.trim() || ""
+          if (text.length > 0 && !bioFound) {
+            project.bio = text
+            bioFound = true
+          }
+        }
+      })
+
+      // Get them based on the a elemnent they will have
+
       // Append everything to the returnedJSon
       returnedJson.name = name?.textContent || "Unknown"
       returnedJson.location = location?.textContent || "Unknown"
