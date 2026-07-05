@@ -140,13 +140,14 @@ browser.runtime.onMessage.addListener(async (message) => {
             const jobBio = section?.querySelector("span") // Bio data stored in first span
             if (jobInfo?.length != 0) {
               job.name = jobInfo[0]?.innerText // Name is always first
+              job.bio = jobBio?.innerText
               job.data = []
               jobInfo?.forEach((data) => {
                 // Loop through each found element, add it to the data in the job.
-                if (data.innerText !== job.name) job.data.push(data.innerText)
+                if (data.innerText !== job.name && data.innerText !== job.bio)
+                  job.data.push(data.innerText)
               })
               job.data.push(...filteredCompanyArray) // Add company data to job data
-              job.bio = jobBio?.innerText
               returnedJson.jobs.push(job)
             }
           })
@@ -157,12 +158,13 @@ browser.runtime.onMessage.addListener(async (message) => {
           const jobBio = jobSection?.querySelector("span") // Bio data stored in first span
           if (jobInfo?.length != 0) {
             job.name = jobInfo[0]?.innerText // Name is always first
+            job.bio = jobBio?.innerText
             job.data = []
             jobInfo?.forEach((data) => {
               // Loop through each found element, add it to the data in the job.
-              if (data.innerText !== job.name) job.data.push(data.innerText)
+              if (data.innerText !== job.name && data.innerText !== job.bio)
+                job.data.push(data.innerText)
             })
-            job.bio = jobBio?.innerText
             returnedJson.jobs.push(job)
           }
         }
@@ -183,13 +185,17 @@ browser.runtime.onMessage.addListener(async (message) => {
         const educationBio = educationFigureParent?.querySelector("span") // Bio data stored in first span
         if (educationInfo?.length != 0) {
           education.name = educationInfo[0]?.innerText // Name is always first
+          education.bio = educationBio?.innerText
           education.data = []
           educationInfo?.forEach((data) => {
             // Loop through each found element, add it to the data in the job.
-            if (data.innerText !== education.name)
+            if (
+              data.innerText !== education.name &&
+              data.innerText !== education.bio
+            ) {
               education.data.push(data.innerText)
+            }
           })
-          education.bio = educationBio?.innerText
           returnedJson.education.push(education)
         }
       })
@@ -206,6 +212,7 @@ browser.runtime.onMessage.addListener(async (message) => {
       console.info("Projects elements:", projectsElements)
       let project = {}
       project.data = []
+      let nameFound = false
       projectsElements?.forEach((element) => {
         if (element.tagName === "A") {
           const url = element.getAttribute("href")
@@ -217,12 +224,20 @@ browser.runtime.onMessage.addListener(async (message) => {
         } else if (element.tagName === "P") {
           const text = element.textContent?.trim() || ""
           if (text.length > 0) {
-            project.data.push(text)
+            if (!nameFound) {
+              project.name = text
+              nameFound = true
+            } else if (element.innerHTML.includes("<span>")) {
+              project.bio = text
+            } else {
+              project.data.push(text)
+            }
           }
         } else if (element.tagName === "HR") {
           returnedJson.projects.push(project)
           project = {}
           project.data = []
+          nameFound = false
         }
       })
 
