@@ -240,6 +240,10 @@ browser.runtime.onMessage.addListener(async (message) => {
           nameFound = false
         }
       })
+      if (returnedJson.projects.length === 0 && project.name) {
+        // This handles edge case where there is only one project and no HR tag to separate it, so we need to push the last project manually
+        returnedJson.projects.push(project)
+      }
 
       // Get Activity section of profile
       const activitySection = findElementByExactText("h2", "Activity")
