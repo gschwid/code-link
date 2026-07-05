@@ -128,6 +128,10 @@ browser.runtime.onMessage.addListener(async (message) => {
           console.info("found job with multiple postions!")
           const companyInfo = jobSection?.querySelectorAll("p") // grab company data
           const companyArray = Array.from(companyInfo || [], (p) => p.innerText)
+          const filteredCompanyArray = companyArray.filter(
+            (text) => !text.includes("yrs") && !text.includes("mos"),
+          )
+          console.info("company data:", filteredCompanyArray)
           const sections = multiplePositionsSection.querySelectorAll("li")
           sections.forEach((section) => {
             let job = {}
@@ -141,7 +145,7 @@ browser.runtime.onMessage.addListener(async (message) => {
                 // Loop through each found element, add it to the data in the job.
                 if (data.innerText !== job.name) job.data.push(data.innerText)
               })
-              job.data.push(...companyArray) // Add company data to job data
+              job.data.push(...filteredCompanyArray) // Add company data to job data
               job.bio = jobBio?.innerText
               returnedJson.jobs.push(job)
             }
