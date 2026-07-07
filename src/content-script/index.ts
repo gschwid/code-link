@@ -282,6 +282,22 @@ browser.runtime.onMessage.addListener(async (message) => {
       returnedJson.about = about?.textContent || "Unknown"
       returnedJson.skills = skills?.textContent || "Unknown"
 
+      // Check that the parsed linkedin profile has linkedin data
+      const values = getAllValues(returnedJson)
+
+      console.info("All values from parsed LinkedIn profile:", values)
+      const githubUrl = values.find((v) => v?.includes("github.com"))
+      if (githubUrl) { // tell background script to query github data if the parsed linkedin profile has github data
+        console.info("Parsed linkedin profile has github data")
+        chrome.runtime.sendMessage({
+          action: "parseGithubData",
+          data: githubUrl,
+        })
+      }
+
+      // TODO: Add bacup strategy for when user has no github data on their linkedin profile, search based on name and company/school.
+
+
       console.info(
         "Finished parsing LinkedIn profile, returning data:",
         returnedJson,
@@ -291,6 +307,24 @@ browser.runtime.onMessage.addListener(async (message) => {
   }
   return Promise.resolve({ success: false })
 })
+
+
+// Helper function to recursively get all values from an object, including nested objects
+function getAllValues(obj) {
+  let values = [];
+  
+  for (const key in obj) {
+    if (typeof obj[key] === 'object' && obj[key] !== null) {
+      // It's a nested object! Drill down into it.
+      values = values.concat(getAllValues(obj[key]));
+    } else {
+      // It's a regular value, save it.
+      values.push(obj[key]);
+    }
+  }
+  
+  return values;
+}
 
 // Helper function to find an element by its text content
 function findElementByText(
