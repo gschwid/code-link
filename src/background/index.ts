@@ -43,6 +43,27 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         "X-GitHub-Api-Version": "2026-03-10",
       },
     })
+    // Loop through each repo and get its readme data + languages
+    repos.data.forEach(async (repo) => {
+      const repoName = repo.name
+      const readme = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
+      owner: githubUsername,
+      repo: repoName,
+      path: 'README.md',
+      headers: {
+        'X-GitHub-Api-Version': '2026-03-10'
+      }
+    })
+    const languages = await octokit.request('GET /repos/{owner}/{repo}/languages', {
+      owner: githubUsername,
+      repo: repoName,
+      headers: {
+        'X-GitHub-Api-Version': '2026-03-10'
+      }
+    })
+    console.info(`Fetched README for repo ${repoName}:`, readme.data)
+    console.info(`Fetched languages for repo ${repoName}:`, languages.data)
+    })
     console.info("Fetched repositories from GitHub:", repos.data)
   }
 })
