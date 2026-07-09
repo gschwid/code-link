@@ -1,8 +1,8 @@
 import { Octokit } from "octokit"
 
-const octokit = new Octokit({ 
-  auth: import.meta.env.VITE_GITHUB_TOKEN 
-});
+const octokit = new Octokit({
+  auth: import.meta.env.VITE_GITHUB_TOKEN, // ADD authentication later down the line with github.
+})
 
 chrome.runtime.onInstalled.addListener(async (opt) => {
   // Check if reason is install or update. Eg: opt.reason === 'install' // If extension is installed.
@@ -30,8 +30,20 @@ chrome.runtime.onInstalled.addListener(async (opt) => {
 // background handles getting github data
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message.action === "parseGithubData") {
-    console.info("Background script received message to parse github data:", message.data)
+    console.info(
+      "Background script received message to parse github data:",
+      message.data,
+    )
     const githubUrl = message.data
+    const githubUsername = githubUrl.split("/")[3]
+    console.info("Extracted GitHub username:", githubUsername)
+    const repos = await octokit.request("GET /users/{username}/repos", {
+      username: githubUsername,
+      headers: {
+        "X-GitHub-Api-Version": "2026-03-10",
+      },
+    })
+    console.info("Fetched repositories from GitHub:", repos.data)
   }
 })
 
