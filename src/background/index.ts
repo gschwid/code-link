@@ -28,43 +28,72 @@ chrome.runtime.onInstalled.addListener(async (opt) => {
 })
 
 // background handles getting github data
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "parseGithubData") {
     console.info(
       "Background script received message to parse github data:",
       message.data,
     )
+
     const githubUrl = message.data
     const githubUsername = githubUrl.split("/")[3]
     console.info("Extracted GitHub username:", githubUsername)
-    const repos = await octokit.request("GET /users/{username}/repos", {
-      username: githubUsername,
-      headers: {
-        "X-GitHub-Api-Version": "2026-03-10",
-      },
-    })
-    // Loop through each repo and get its readme data + languages
-    repos.data.forEach(async (repo) => {
-      const repoName = repo.name
-      const readme = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
-      owner: githubUsername,
-      repo: repoName,
-      path: 'README.md',
-      headers: {
-        'X-GitHub-Api-Version': '2026-03-10'
+
+    // Self-executing async function to handle the promises inside the listener
+    ;(async () => {
+      try {
+        const repos = await octokit.request("GET /users/{username}/repos", {
+          username: githubUsername,
+          headers: {
+            "X-GitHub-Api-Version": "2026-03-10",
+          },
+        })
+
+        // 1. Use Promise.all + map so JavaScript actually waits for the loop to finish
+        const returnedData = await Promise.all(
+          repos.data.map(async (repo) => {
+            const repoName = repo.name
+
+            const readme = await octokit.request(
+              "GET /repos/{owner}/{repo}/contents/{path}",
+              {
+                owner: githubUsername,
+                repo: repoName,
+                path: "README.md",
+                headers: { "X-GitHub-Api-Version": "2026-03-10" },
+              },
+            )
+
+            const languages = await octokit.request(
+              "GET /repos/{owner}/{repo}/languages",
+              {
+                owner: githubUsername,
+                repo: repoName,
+                headers: { "X-GitHub-Api-Version": "2026-03-10" },
+              },
+            )
+
+            return {
+              name: repoName,
+              readme: atob(readme.data.content),
+              languages: languages.data,
+            }
+          }),
+        )
+
+        // 2. This will now log perfectly with all your data populated!
+        console.info("Returning data to content script:", returnedData)
+
+        // 3. Send the data back to the content script
+        sendResponse({ success: true, data: returnedData })
+      } catch (error) {
+        console.error("Error fetching GitHub data:", error)
+        sendResponse({ success: false, error: error.message })
       }
-    })
-    const languages = await octokit.request('GET /repos/{owner}/{repo}/languages', {
-      owner: githubUsername,
-      repo: repoName,
-      headers: {
-        'X-GitHub-Api-Version': '2026-03-10'
-      }
-    })
-    console.info(`Fetched README for repo ${repoName}:`, readme.data)
-    console.info(`Fetched languages for repo ${repoName}:`, languages.data)
-    })
-    console.info("Fetched repositories from GitHub:", repos.data)
+    })()
+
+    // 4. CRITICAL: Return true to tell Chrome you will call sendResponse asynchronously
+    return true
   }
 })
 
