@@ -39,7 +39,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const githubUsername = githubUrl.split("/")[3]
     console.info("Extracted GitHub username:", githubUsername)
 
-    // Self-executing async function to handle the promises inside the listener
+    // Get all repos along with their readme and languages using octokit
     ;(async () => {
       try {
         const repos = await octokit.request("GET /users/{username}/repos", {
@@ -90,6 +90,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.error("Error fetching GitHub data:", error)
         sendResponse({ success: false, error: error.message })
       }
+    })()
+
+    // Get most recent contributions for the user
+    ;(async () => {
+      const contributionsData = await octokit.request("GET /search/commits", {
+        headers: {
+          "X-GitHub-Api-Version": "2026-03-10",
+        },
+        q: `author:${githubUsername}`,
+        sort: "author-date",
+        order: "desc",
+      })
+      console.info(
+        "Returning contributions data to content script:",
+        contributionsData,
+      )
     })()
 
     // 4. CRITICAL: Return true to tell Chrome you will call sendResponse asynchronously

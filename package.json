@@ -75,9 +75,12 @@
   "type": "module",
   "version": "0.0.1",
   "dependencies": {
+    "@octokit/graphql": "^9.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "install": "^0.13.0",
     "lucide-vue-next": "^0.564.0",
+    "npm": "^11.18.0",
     "octokit": "^5.0.5",
     "tailwind-merge": "^3.4.1"
   }
